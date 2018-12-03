@@ -1,0 +1,74 @@
+---
+title: "HAR Machine Learning"
+author: "Kennex Razon"
+date: "December 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+```
+
+## The HAR Dataset
+We start with the dataset. 
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI
+
+We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var and avg. So we'll try and use those first.
+
+We'll look for those columns first then, subset the original `df`.
+```{r har}
+ df <- read.csv(file="D:/PraticalMachineLearning/Project_Week4/pml-training.csv", header=TRUE, sep=",")
+#trainDf<-createDataPartition(y=df$classe,p=0.75,list=FALSE)
+#training <- df[trainDf,]
+#testing <- df[-trainDf,]
+#set.seed(1)
+#modelFit <- train(classe~.,data=training, method="glm")
+#modelFit
+a <- grep("avg|max|min|var|amplitude|classe",names(df),value=TRUE)
+df1 <- df[a]
+
+```
+
+One of our motivations for subsetting data this way is to remove the NAs. So we'll do that on our subsetted `df1` and store it in `df2`. Then we'll be left with:
+
+```{r df1}
+df2 <- df1[complete.cases(df1), ]
+#head(df2)
+#dim(df2)
+```
+
+Now we try again training and testing again.
+
+```{r trainging}
+trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+#trainDf
+training <- df2[trainDf,]
+testing <- df2[-trainDf,]
+
+trainingData<-training[,1:64]
+trainingClasses<-training[,65]
+
+
+glm1 <- train(trainingData,trainingClasses,method="knn"
+#              ,preProcess(c("center","scale"))
+              ,tuneLength=10
+              ,trControl = trainControl(method = "cv"))
+#dim(testing)
+#dim(training)
+#set.seed(2)
+#modelFit <- train(classe~.,data=training, method="glm")
+#modelFit
+```
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+#plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
