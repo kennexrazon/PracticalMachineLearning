@@ -135,7 +135,8 @@ $(document).ready(function () {
 <p>Read more: <a href="http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI" class="uri">http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI</a></p>
 <p>We initially try to use all variables to try a generalized linear model. And we’ll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var and avg. So we’ll try and use those first.</p>
 <p>We’ll look for those columns first then, subset the original <code>df</code>.</p>
-<pre class="r"><code> df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/Project_Week4/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
+<pre class="r"><code> df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
+#D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
 #trainDf&lt;-createDataPartition(y=df$classe,p=0.75,list=FALSE)
 #training &lt;- df[trainDf,]
 #testing &lt;- df[-trainDf,]
@@ -148,19 +149,31 @@ df1 &lt;- df[a]</code></pre>
 <pre class="r"><code>df2 &lt;- df1[complete.cases(df1), ]
 #head(df2)
 #dim(df2)</code></pre>
-<p>Now we try again training and testing again.</p>
-<pre class="r"><code>trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+<p>Now we try again training and testing again. Still dirty datasets. We take out the strings.</p>
+<pre class="r"><code>df3 &lt;- df2[,1:64]
+nums &lt;- unlist(lapply(df3, is.numeric)) 
+dim(df3)</code></pre>
+<pre><code>## [1] 406  64</code></pre>
+<pre class="r"><code>df4&lt;- df3[,nums]
+#df3 &lt;- df2[is.na(as.numeric(as.character(df2))),1:64]
+dim(df4)</code></pre>
+<pre><code>## [1] 406  55</code></pre>
+<pre class="r"><code>#train &lt;- as.numeric(as.character(df2[,1:64]))
+#str(train)
+#test
+#trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 #trainDf
-training &lt;- df2[trainDf,]
-testing &lt;- df2[-trainDf,]
+#training &lt;- df2[trainDf,]
+#testing &lt;- df2[-trainDf,]
 
-trainingData&lt;-training[,1:64]
-trainingClasses&lt;-training[,65]
-class(trainingData)</code></pre>
-<pre><code>## [1] &quot;data.frame&quot;</code></pre>
-<pre class="r"><code>#glm1 &lt;- train(trainingData,trainingClasses,method=&quot;glm&quot;
+#trainingData&lt;-training[,1:64]
+#trainingClasses&lt;-training[,65]
+#str(trainingData)
+
+
+#glm1 &lt;- train(trainingData,trainingClasses,method=&quot;knn&quot;
 #              ,preProcess(c(&quot;center&quot;,&quot;scale&quot;))
-#              ,tuneLength=10
+#             ,tuneLength=10
 #              ,trControl = trainControl(method = &quot;cv&quot;))
 #dim(testing)
 #dim(training)

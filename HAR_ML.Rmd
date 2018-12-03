@@ -21,7 +21,8 @@ We initially try to use all variables to try a generalized linear model. And we'
 
 We'll look for those columns first then, subset the original `df`.
 ```{r har}
- df <- read.csv(file="D:/PraticalMachineLearning/Project_Week4/pml-training.csv", header=TRUE, sep=",")
+ df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
+#D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
 #trainDf<-createDataPartition(y=df$classe,p=0.75,list=FALSE)
 #training <- df[trainDf,]
 #testing <- df[-trainDf,]
@@ -41,22 +42,33 @@ df2 <- df1[complete.cases(df1), ]
 #dim(df2)
 ```
 
-Now we try again training and testing again.
+Now we try again training and testing again. Still dirty datasets. We take out the strings.
 
 ```{r trainging}
-trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+
+df3 <- df2[,1:64]
+nums <- unlist(lapply(df3, is.numeric)) 
+dim(df3)
+df4<- df3[,nums]
+#df3 <- df2[is.na(as.numeric(as.character(df2))),1:64]
+dim(df4)
+#train <- as.numeric(as.character(df2[,1:64]))
+#str(train)
+#test
+#trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 #trainDf
-training <- df2[trainDf,]
-testing <- df2[-trainDf,]
+#training <- df2[trainDf,]
+#testing <- df2[-trainDf,]
 
-trainingData<-training[,1:64]
-trainingClasses<-training[,65]
+#trainingData<-training[,1:64]
+#trainingClasses<-training[,65]
+#str(trainingData)
 
 
-glm1 <- train(trainingData,trainingClasses,method="knn"
+#glm1 <- train(trainingData,trainingClasses,method="knn"
 #              ,preProcess(c("center","scale"))
-              ,tuneLength=10
-              ,trControl = trainControl(method = "cv"))
+#             ,tuneLength=10
+#              ,trControl = trainControl(method = "cv"))
 #dim(testing)
 #dim(training)
 #set.seed(2)
