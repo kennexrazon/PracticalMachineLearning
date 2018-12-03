@@ -156,9 +156,15 @@ dim(df3)</code></pre>
 <pre><code>## [1] 406  64</code></pre>
 <pre class="r"><code>df4&lt;- df3[,nums]
 #df3 &lt;- df2[is.na(as.numeric(as.character(df2))),1:64]
-dim(df4)</code></pre>
-<pre><code>## [1] 406  55</code></pre>
-<pre class="r"><code>#train &lt;- as.numeric(as.character(df2[,1:64]))
+#dim(df4)
+trainData &lt;- df4
+trainClass &lt;- df2[,65]
+training &lt;- trainData
+training$classe &lt;- trainClass
+class(training)</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>#class(trainClass)
+#train &lt;- as.numeric(as.character(df2[,1:64]))
 #str(train)
 #test
 #trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
@@ -171,10 +177,10 @@ dim(df4)</code></pre>
 #str(trainingData)
 
 
-#glm1 &lt;- train(trainingData,trainingClasses,method=&quot;knn&quot;
-#              ,preProcess(c(&quot;center&quot;,&quot;scale&quot;))
-#             ,tuneLength=10
-#              ,trControl = trainControl(method = &quot;cv&quot;))
+#glm1 &lt;- train(trainData,trainClass,method=&quot;knn&quot;
+#              #,preProcess(c(&quot;center&quot;,&quot;scale&quot;))
+ #            ,tuneLength=10
+ #             ,trControl = trainControl(method = &quot;cv&quot;))
 #dim(testing)
 #dim(training)
 #set.seed(2)

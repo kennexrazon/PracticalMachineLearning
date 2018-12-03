@@ -51,7 +51,16 @@ nums <- unlist(lapply(df3, is.numeric))
 dim(df3)
 df4<- df3[,nums]
 #df3 <- df2[is.na(as.numeric(as.character(df2))),1:64]
-dim(df4)
+#dim(df4)
+trainData <- df4
+trainClass <- df2[,65]
+training <- trainData
+training$classe <- trainClass
+class(training)
+```
+A lot of coding
+```{r fitting}
+#class(trainClass)
 #train <- as.numeric(as.character(df2[,1:64]))
 #str(train)
 #test
@@ -65,15 +74,15 @@ dim(df4)
 #str(trainingData)
 
 
-#glm1 <- train(trainingData,trainingClasses,method="knn"
-#              ,preProcess(c("center","scale"))
-#             ,tuneLength=10
-#              ,trControl = trainControl(method = "cv"))
+#glm1 <- train(trainData,trainClass,method="knn"
+#              #,preProcess(c("center","scale"))
+ #            ,tuneLength=10
+ #             ,trControl = trainControl(method = "cv"))
 #dim(testing)
 #dim(training)
-#set.seed(2)
-#modelFit <- train(classe~.,data=training, method="glm")
-#modelFit
+set.seed(2)
+modelFit <- train(classe ~ .,data=training, method="glm")
+modelFit
 ```
 ## Including Plots
 
