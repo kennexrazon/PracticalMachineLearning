@@ -46,17 +46,13 @@ Now we try again training and testing again. Still dirty datasets. We take out t
 
 ```{r trainging}
 
-df3 <- df2[,1:64]
-nums <- unlist(lapply(df3, is.numeric)) 
-dim(df3)
-df4<- df3[,nums]
-#df3 <- df2[is.na(as.numeric(as.character(df2))),1:64]
-#dim(df4)
-trainData <- df4
-trainClass <- df2[,65]
-training <- trainData
-training$classe <- trainClass
-class(training)
+#df3 <- df2[,1:64]
+#nums <- unlist(lapply(df3, is.numeric)) 
+#df4<- df3[,nums]
+#trainData <- df4
+#trainClass <- df2[,65]
+#training <- trainData
+#training$classe <- trainClass
 ```
 A lot of coding
 ```{r fitting}
@@ -64,24 +60,17 @@ A lot of coding
 #train <- as.numeric(as.character(df2[,1:64]))
 #str(train)
 #test
-#trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 #trainDf
-#training <- df2[trainDf,]
-#testing <- df2[-trainDf,]
+training <- df2[trainDf,]
+testing <- df2[-trainDf,]
 
 #trainingData<-training[,1:64]
 #trainingClasses<-training[,65]
 #str(trainingData)
 
-
-#glm1 <- train(trainData,trainClass,method="knn"
-#              #,preProcess(c("center","scale"))
- #            ,tuneLength=10
- #             ,trControl = trainControl(method = "cv"))
-#dim(testing)
-#dim(training)
 set.seed(2)
-modelFit <- train(classe ~ .,data=training, method="glm")
+modelFit <- train(classe ~ .,data=training, method="knn")
 modelFit
 ```
 ## Including Plots
