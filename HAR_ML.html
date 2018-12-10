@@ -133,48 +133,100 @@ $(document).ready(function () {
 <p>We start with the dataset.</p>
 <p>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</p>
 <p>Read more: <a href="http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI" class="uri">http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI</a></p>
-<p>We initially try to use all variables to try a generalized linear model. And we’ll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var and avg. So we’ll try and use those first.</p>
-<p>We’ll look for those columns first then, subset the original <code>df</code>.</p>
-<pre class="r"><code> df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
+<p>We initially try to use all variables to try a generalized linear model. And we’ll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var, avg and std. So we’ll try and use those first.</p>
+<p>We’ll look for those columns first then, subset the original <code>df</code> to <code>df1</code>.</p>
+<pre class="r"><code>#df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
+df &lt;- read.csv(file=&quot;C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
 #D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
 
-a &lt;- grep(&quot;avg|max|min|var|amplitude|classe&quot;,names(df),value=TRUE)
+#a &lt;- grep(&quot;avg|max|min|var|amplitude|skewness|total|std|kurtosis|classe&quot;,names(df),value=TRUE)
+a &lt;- grep(&quot;avg|max|min|var|amplitude|std|classe&quot;,names(df),value=TRUE)
 df1 &lt;- df[a]</code></pre>
+<div id="clean-the-data" class="section level3">
+<h3>Clean the data</h3>
 <p>One of our motivations for subsetting data this way is to remove the NAs. So we’ll do that on our subsetted <code>df1</code> and store it in <code>df2</code>. Then we’ll be left with:</p>
-<pre class="r"><code>df2 &lt;- df1[complete.cases(df1), ]</code></pre>
-<p>Now we try again training and testing again. Still dirty datasets. We take out the strings.</p>
-<pre class="r"><code>#df3 &lt;- df2[,1:64]
-#nums &lt;- unlist(lapply(df3, is.numeric)) 
-#df4&lt;- df3[,nums]
-#trainData &lt;- df4
-#trainClass &lt;- df2[,65]
-#training &lt;- trainData
-#training$classe &lt;- trainClass</code></pre>
-<p>A lot of coding</p>
-<pre class="r"><code>trainDf&lt;-createDataPartition(y=df2$classe,p=0.65,list=FALSE)
+<pre class="r"><code>df2 &lt;- df1[complete.cases(df1), ]
+b &lt;- grep(&quot;max|min|amplitude&quot;,names(df2),value=TRUE)
+df2[b] &lt;- data.frame(lapply(df2[b], function(x) { gsub(&quot;#DIV/0!&quot;, &quot;NA&quot;, x)}))
+df2[b] &lt;- data.frame(lapply(df2[b],as.numeric))
+#str(df2[b])</code></pre>
+<p>Now we split the data into a training and testing set.</p>
+<pre class="r"><code>trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 training &lt;- df2[trainDf,]
 testing &lt;- df2[-trainDf,]
 
-preObj &lt;- preProcess(training[,-55],method=c(&quot;center&quot;,&quot;scale&quot;))
-preObj</code></pre>
-<pre><code>## Created from 266 samples and 64 variables
-## 
-## Pre-processing:
-##   - centered (54)
-##   - ignored (10)
-##   - scaled (54)</code></pre>
-<pre class="r"><code>#trainingData&lt;-training[,1:64]
-#trainingClasses&lt;-training[,65]
-#str(trainingData)
+trainingData &lt;- training[,1:length(names(training))-1]
+trainingClass &lt;- training[,length(names(training))]
 
-#set.seed(2)
-#modelFit &lt;- train(classe ~ .,data=training, method=&quot;knn&quot;)
-#modelFit</code></pre>
+set.seed(2)</code></pre>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
+<div id="classify" class="section level3">
+<h3>Classify</h3>
+<p>The training data is used to create a model.</p>
+<pre><code>## Conditional Inference Random Forest 
+## 
+## 307 samples
+##  76 predictor
+##   5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 307, 307, 307, 307, 307, 307, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.6464510  0.5482724
+##   39    0.6741652  0.5864295
+##   76    0.6717355  0.5831255
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 39.</code></pre>
+</div>
+<div id="trying-different-resampling-methods" class="section level3">
+<h3>Trying different resampling methods</h3>
+<pre class="r"><code>modelFit_cv &lt;- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = &quot;cv&quot;))
+modelFit_cv</code></pre>
+<pre><code>## Conditional Inference Random Forest 
+## 
+## 307 samples
+##  76 predictor
+##   5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold) 
+## Summary of sample sizes: 275, 277, 275, 276, 277, 277, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.6837500  0.5945121
+##   39    0.6936492  0.6107721
+##   76    0.6968683  0.6151345
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 76.</code></pre>
+</div>
+<div id="using-bootstrapping" class="section level3">
+<h3>Using Bootstrapping</h3>
+<pre class="r"><code>modelFit_oob &lt;- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = &quot;oob&quot;))
+modelFit_oob</code></pre>
+<pre><code>## Conditional Inference Random Forest 
+## 
+## 307 samples
+##  76 predictor
+##   5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##    2    0.6938111  0.6091026
+##   39    0.7133550  0.6364762
+##   76    0.7296417  0.6571725
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 76.</code></pre>
 <p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+</div>
 </div>
 
 
