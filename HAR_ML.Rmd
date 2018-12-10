@@ -23,14 +23,15 @@ We'll look for those columns first then, subset the original `df`.
 ```{r har}
  df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
 #D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
-#trainDf<-createDataPartition(y=df$classe,p=0.75,list=FALSE)
-#training <- df[trainDf,]
-#testing <- df[-trainDf,]
-#set.seed(1)
-#modelFit <- train(classe~.,data=training, method="glm")
-#modelFit
-a <- grep("avg|max|min|var|amplitude|classe",names(df),value=TRUE)
+
+#a <- grep("avg|max|min|var|amplitude|skewness|total|std|kurtosis|classe",names(df),value=TRUE)
+a <- grep("avg|max|min|var|amplitude|std|classe",names(df),value=TRUE)
 df1 <- df[a]
+
+
+
+#a <- subset(df, new_window != "yes")
+#df1 <- a
 
 ```
 
@@ -38,46 +39,39 @@ One of our motivations for subsetting data this way is to remove the NAs. So we'
 
 ```{r df1}
 df2 <- df1[complete.cases(df1), ]
-#head(df2)
-#dim(df2)
+b <- grep("max|min|amplitude",names(df2),value=TRUE)
+df2[b] <- data.frame(lapply(df2[b], function(x) { gsub("#DIV/0!", "NA", x)}))
+#df2[b] <- data.frame(lapply(df2[b], function(x) { gsub("\"", "", x)}))
+df2[b] <- data.frame(lapply(df2[b],as.numeric))
+#str(df2[b])
+
 ```
 
 Now we try again training and testing again. Still dirty datasets. We take out the strings.
-
-```{r trainging}
-
-#df3 <- df2[,1:64]
-#nums <- unlist(lapply(df3, is.numeric)) 
-#df4<- df3[,nums]
-#trainData <- df4
-#trainClass <- df2[,65]
-#training <- trainData
-#training$classe <- trainClass
-```
 A lot of coding
 ```{r fitting}
-#class(trainClass)
-#train <- as.numeric(as.character(df2[,1:64]))
-#str(train)
-#test
+
 trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
-#trainDf
 training <- df2[trainDf,]
 testing <- df2[-trainDf,]
+
+#preObj <- preProcess(training[,-65],method=c("center","scale"))
 
 #trainingData<-training[,1:64]
 #trainingClasses<-training[,65]
 #str(trainingData)
 
 set.seed(2)
-modelFit <- train(classe ~ .,data=training, method="knn")
-modelFit
+#modelFit <- train(classe ~ .,data=training, method="cforest") # takes about 3 hrs to run
+#modelFit
 ```
 ## Including Plots
 
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
+modelFit <- train(classe ~ .,data=training, method = 'cforest')
+modelFit
 #plot(pressure)
 ```
 

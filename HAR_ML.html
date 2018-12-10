@@ -137,54 +137,38 @@ $(document).ready(function () {
 <p>We’ll look for those columns first then, subset the original <code>df</code>.</p>
 <pre class="r"><code> df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
 #D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
-#trainDf&lt;-createDataPartition(y=df$classe,p=0.75,list=FALSE)
-#training &lt;- df[trainDf,]
-#testing &lt;- df[-trainDf,]
-#set.seed(1)
-#modelFit &lt;- train(classe~.,data=training, method=&quot;glm&quot;)
-#modelFit
+
 a &lt;- grep(&quot;avg|max|min|var|amplitude|classe&quot;,names(df),value=TRUE)
 df1 &lt;- df[a]</code></pre>
 <p>One of our motivations for subsetting data this way is to remove the NAs. So we’ll do that on our subsetted <code>df1</code> and store it in <code>df2</code>. Then we’ll be left with:</p>
-<pre class="r"><code>df2 &lt;- df1[complete.cases(df1), ]
-#head(df2)
-#dim(df2)</code></pre>
+<pre class="r"><code>df2 &lt;- df1[complete.cases(df1), ]</code></pre>
 <p>Now we try again training and testing again. Still dirty datasets. We take out the strings.</p>
-<pre class="r"><code>df3 &lt;- df2[,1:64]
-nums &lt;- unlist(lapply(df3, is.numeric)) 
-dim(df3)</code></pre>
-<pre><code>## [1] 406  64</code></pre>
-<pre class="r"><code>df4&lt;- df3[,nums]
-#df3 &lt;- df2[is.na(as.numeric(as.character(df2))),1:64]
-#dim(df4)
-trainData &lt;- df4
-trainClass &lt;- df2[,65]
-training &lt;- trainData
-training$classe &lt;- trainClass
-class(training)</code></pre>
-<pre><code>## [1] &quot;data.frame&quot;</code></pre>
-<pre class="r"><code>#class(trainClass)
-#train &lt;- as.numeric(as.character(df2[,1:64]))
-#str(train)
-#test
-#trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
-#trainDf
-#training &lt;- df2[trainDf,]
-#testing &lt;- df2[-trainDf,]
+<pre class="r"><code>#df3 &lt;- df2[,1:64]
+#nums &lt;- unlist(lapply(df3, is.numeric)) 
+#df4&lt;- df3[,nums]
+#trainData &lt;- df4
+#trainClass &lt;- df2[,65]
+#training &lt;- trainData
+#training$classe &lt;- trainClass</code></pre>
+<p>A lot of coding</p>
+<pre class="r"><code>trainDf&lt;-createDataPartition(y=df2$classe,p=0.65,list=FALSE)
+training &lt;- df2[trainDf,]
+testing &lt;- df2[-trainDf,]
 
-#trainingData&lt;-training[,1:64]
+preObj &lt;- preProcess(training[,-55],method=c(&quot;center&quot;,&quot;scale&quot;))
+preObj</code></pre>
+<pre><code>## Created from 266 samples and 64 variables
+## 
+## Pre-processing:
+##   - centered (54)
+##   - ignored (10)
+##   - scaled (54)</code></pre>
+<pre class="r"><code>#trainingData&lt;-training[,1:64]
 #trainingClasses&lt;-training[,65]
 #str(trainingData)
 
-
-#glm1 &lt;- train(trainData,trainClass,method=&quot;knn&quot;
-#              #,preProcess(c(&quot;center&quot;,&quot;scale&quot;))
- #            ,tuneLength=10
- #             ,trControl = trainControl(method = &quot;cv&quot;))
-#dim(testing)
-#dim(training)
 #set.seed(2)
-#modelFit &lt;- train(classe~.,data=training, method=&quot;glm&quot;)
+#modelFit &lt;- train(classe ~ .,data=training, method=&quot;knn&quot;)
 #modelFit</code></pre>
 </div>
 <div id="including-plots" class="section level2">
