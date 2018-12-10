@@ -17,29 +17,25 @@ Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activ
 
 Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI
 
-We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var, avg and std. So we'll try and use those first. 
+We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. Also there are a lot of strings that are not translatable to numeric such as `#Div/0!` and `NA`. We'll automatically remove them from reading.
 
 We'll look for those columns first then, subset the original `df` to `df1`. 
 ```{r har}
-#df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
-df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
-#D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
-
+df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings=c("NA","#DIV/0!",""))
+#df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
 #a <- grep("avg|max|min|var|amplitude|skewness|total|std|kurtosis|classe",names(df),value=TRUE)
-#a <- grep("avg|max|min|var|amplitude|std|classe",names(df),value=TRUE)
-#df1 <- df[a]
 df1 <- df
 ```
 ### Clean the data
-One of our motivations for subsetting data this way is to remove the NAs. So we'll do that on our subsetted `df1` and store it in `df2`. Then we'll be left with:
+One of our motivations for subsetting data this way is to remove the NAs and irrelevant data. So we'll do that on our subsetted `df1` and store it in `df2`. Then we'll be left with:
 
 ```{r df1}
-df2 <- df1[complete.cases(df1), ]
-b <- grep("max|min|amplitude",names(df2),value=TRUE)
-df2[b] <- data.frame(lapply(df2[b], function(x) { gsub("#DIV/0!", "NA", x)}))
-df2[b] <- data.frame(lapply(df2[b],as.numeric))
+df1 <- df1[,(colSums(is.na(df1)) == 0)]
+df1 <- df1[,7:ncol(df1)]
 #str(df2[b])
-
+zeroVar <- nearZeroVar(df1, saveMetrics=TRUE)
+#df2 <- myTraining[,zeroVar$df2==FALSE]
+df2 <- df1[,zeroVar$nzv == FALSE]
 ```
 
 Now we split the data into a training and testing set. 
@@ -59,7 +55,7 @@ set.seed(2)
 The training data is used to create a model.
 
 ```{r pressure, echo=FALSE}
-modelFit <- train(classe ~ .,data=training, method = 'cforest')
+modelFit <- train(classe ~ .,data=df2, method = 'cforest')
 modelFit
 #plot(pressure)
 ```
