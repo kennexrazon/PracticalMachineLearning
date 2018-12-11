@@ -45,7 +45,7 @@ df1_test <- df_test
 
 One of our motivations for subsetting data this way is to remove the NAs. So we'll do that on our subsetted `df1` and store it in `df2`. We'll do the same with the testing data. 
 
-Columns 1 to 6 contain data that is not relevant to our analysis.
+Columns 1 to 6 contain data that is not relevant to our analysis so we'll go ahead and remove those too.
 
 ```{r df1}
 df1 <- df1[,(colSums(is.na(df1)) == 0)]
@@ -67,7 +67,7 @@ df2_test <- df1_test
 
 ```
 
-Initial runs showed problems in runtime. To reduce this at least for the building of this code, a very small subset of the data was used for testing. 
+Initial runs showed problems in runtime taking up to 4 hrs in my machine. To reduce this, at least for the building of this code, a very small subset of the data was used for testing, hence on the comments a `p=0.1` can be seen. The approximate run time is 30 mins.
 
 ```{r fitting}
 
@@ -79,26 +79,31 @@ Initial runs showed problems in runtime. To reduce this at least for the buildin
 #trainingClass <- training[,length(names(training))]
 set.seed(21)
 ```
-### Classify
+### Model building and Prediction
 
-The training data `df2` is used to create a model also with cross validation.
+The training data `df2` is used to create a model using random forest. We also look at our estimated out of sample error by calling the `modelFit` object. This will return a few stats about our predictor. 
+
+Originally the model used to predict was random forest so we'll start with it.
 
 ```{r pressure, echo=FALSE}
 modelFit <- train(classe ~ .,data=df2, method = 'rf', trControl = trainControl(method = "cv") )
 modelFit
 prediction1<- predict(modelFit,df2_test)
+prediction1
 #plot(pressure)
 ```
 
-### Trying different resampling methods
+### Trying different methods
+Trying out other models in the initial runs, we get far worse results. 
 ```{r}
-#modelFit_cv <- train(trainingData,trainingClass,method = 'rpart', trControl = trainControl(method = "cv"))
-#modelFit_cv
+modelFit_cv <- train(trainingData,trainingClass,method = 'rpart', trControl = trainControl(method = "cv"))
+modelFit_cv
 ```
 
 ### Using Bootstrapping
+
 ```{r}
-#modelFit_oob <- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = "oob"))
-#modelFit_oob
+modelFit_oob <- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = "oob"))
+modelFit_oob
 ```
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
