@@ -1,0 +1,91 @@
+---
+title: "HAR Machine Learning"
+author: "Kennex Razon"
+date: "December 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+```
+
+## The HAR Dataset
+We start with the dataset. 
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI
+
+We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we run the commented code. turns out there are columns in our dataframe that only have values every so often. These values are max,min, amplitude, var, avg and std. So we'll try and use those first. 
+
+We'll look for those columns first then, subset the original `df` to `df1`. 
+```{r har}
+#df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
+#df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
+df <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+df_test <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+#D:\PraticalMachineLearning\PracticalMachineLearningRepo\trunk
+
+#a <- grep("avg|max|min|var|amplitude|skewness|total|std|kurtosis|classe",names(df),value=TRUE)
+#a <- grep("avg|max|min|var|amplitude|std|classe",names(df),value=TRUE)
+#df1 <- df[a]
+df1 <- df
+df1_test <- df_test
+```
+### Clean the data
+One of our motivations for subsetting data this way is to remove the NAs. So we'll do that on our subsetted `df1` and store it in `df2`. Then we'll be left with:
+
+```{r df1}
+df1 <- df1[,(colSums(is.na(df1)) == 0)]
+df1 <- df1[,7:ncol(df1)]
+df2 <- df1
+
+df1_test <- df1_test[,(colSums(is.na(df1_test)) == 0)]
+df1_test <- df1_test[,7:ncol(df1_test)]
+df2_test <- df1_test
+
+#df2 <- data.frame(lapply(df2,as.numeric))
+#df2 <- df2[,colSums(is.na(df2))<ncol(df2)]
+#df2 <- df1[complete.cases(df1), ]
+#b <- grep("max|min|amplitude",names(df2),value=TRUE)
+#df2 <- data.frame(lapply(df2, function(x) { gsub("#DIV/0!", "NA", x)}))
+#b <- names(df2)[1:ncol(df2)-1]
+#df2[b] <- data.frame(lapply(df2[b],as.numeric))
+#str(df2[b])
+
+```
+
+Now we split the data into a training and testing set. 
+```{r fitting}
+
+trainDf<-createDataPartition(y=df2$classe,p=0.95,list=FALSE)
+training <- df2[trainDf,]
+testing <- df2[-trainDf,]
+
+trainingData <- training[,1:length(names(training))-1]
+trainingClass <- training[,length(names(training))]
+set.seed(21)
+```
+### Classify
+
+The training data is used to create a model.
+
+```{r pressure, echo=FALSE}
+modelFit <- train(classe ~ .,data=df2, method = 'rf')
+prediction1<- predict(modelFit,df2_test)
+#plot(pressure)
+```
+
+### Trying different resampling methods
+```{r}
+modelFit_cv <- train(trainingData,trainingClass,method = 'rpart', trControl = trainControl(method = "cv"))
+modelFit_cv
+```
+
+### Using Bootstrapping
+```{r}
+modelFit_oob <- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = "oob"))
+modelFit_oob
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
