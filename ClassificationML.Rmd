@@ -17,20 +17,21 @@ Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activ
 
 Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI
 
-We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we do this. 
+We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we do this. This is expected since the code won't even run. Also GLMs can only do binary classification.
 
 ```{r}
 #df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 #df_test <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 
 #df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
+df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+df_test <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 
-df <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
-df_test <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+#df <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+#df_test <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 ```
-First of all, a lot of the columns have non-numerics. Secondly there are also a lot of columns that have mostly NAs. Not to mention columns that only have values every so often. These columns usually had column names with `avg|max|min|var|amplitude|skewness|total|std|kurtosis|`. 
+A lot of the columns have non-numerics. Secondly there are also a lot of columns that have mostly NAs. Not to mention columns that only have values every so often. These columns usually had column names with `avg|max|min|var|amplitude|skewness|total|std|kurtosis|`. 
 
-I'll look for those columns first then, subset the original `df` to `df1`. We'll also do the same for the testing data.
 ```{r har}
 
 
@@ -46,6 +47,8 @@ df1_test <- df_test
 One of our motivations for subsetting data this way is to remove the NAs. So we'll do that on our subsetted `df1` and store it in `df2`. We'll do the same with the testing data. 
 
 Columns 1 to 6 contain data that is not relevant to our analysis so we'll go ahead and remove those too.
+
+The dataset also contains strings like `#DIV/0!` and `NA` and these were read as NAs in the `read.csv` call.
 
 ```{r df1}
 df1 <- df1[,(colSums(is.na(df1)) == 0)]
@@ -71,6 +74,7 @@ Initial runs showed problems in runtime taking up to 4 hrs in my machine. To red
 
 ```{r fitting}
 
+#trainDf<-createDataPartition(y=df2$classe,p=0.1,list=FALSE)
 trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 training <- df2[trainDf,]
 testing <- df2[-trainDf,]
@@ -80,10 +84,10 @@ trainingClass <- training[,length(names(training))]
 set.seed(21)
 ```
 ### Model building and Prediction
+Originally in the study conducted, the model used to predict was random forest so we'll start with it.
+The training data `df2` is used to create the model. We also look at our estimated out of sample error by calling the `modelFit` object. This will return a few stats about our predictor. 
 
-The training data `df2` is used to create a model using random forest. We also look at our estimated out of sample error by calling the `modelFit` object. This will return a few stats about our predictor. 
-
-Originally the model used to predict was random forest so we'll start with it.
+We'll also take this time to go ahead and predict using our test data.
 
 ```{r pressure, echo=FALSE}
 modelFit <- train(classe ~ .,data=df2, method = 'rf', trControl = trainControl(method = "cv") )
@@ -101,9 +105,11 @@ modelFit_cv
 ```
 
 ### Using Bootstrapping
-
+Using another forest approach `cforest` we get better results. 
 ```{r}
 modelFit_oob <- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = "oob"))
 modelFit_oob
 ```
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Conclusion
+The method used plays a big role in the runtime. Another factor to consider is the actual algorithms behind the method. For example, knn computes distances of point in n dimensions while forest type classifiers move from one leaf to another. When we logically think about the steps needed to classify a motion, the forest classifiers would be a closer match to how we would do the act of classifying itself.

@@ -97,9 +97,6 @@ img {
 button.code-folding-btn:focus {
   outline: none;
 }
-summary {
-  display: list-item;
-}
 </style>
 
 
@@ -107,74 +104,14 @@ summary {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
-
-<style type="text/css">
-.tabset-dropdown > .nav-tabs {
-  display: inline-table;
-  max-height: 500px;
-  min-height: 44px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
-  font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
-}
-
-.tabset-dropdown > .nav-tabs > li.active {
-  display: block;
-}
-
-.tabset-dropdown > .nav-tabs > li > a,
-.tabset-dropdown > .nav-tabs > li > a:focus,
-.tabset-dropdown > .nav-tabs > li > a:hover {
-  border: none;
-  display: inline-block;
-  border-radius: 4px;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
-  display: block;
-  float: none;
-}
-
-.tabset-dropdown > .nav-tabs > li {
-  display: none;
-}
-</style>
-
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
 });
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
 </script>
 
 <!-- code folding -->
+
 
 
 
@@ -196,16 +133,17 @@ $(document).ready(function () {
 <p>We start with the dataset. I run the code in different machines and some don’t have internet connection so I had to comment out some of the file address.</p>
 <p>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</p>
 <p>Read more: <a href="http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI" class="uri">http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI</a></p>
-<p>We initially try to use all variables to try a generalized linear model. And we’ll fail horribly when we do this.</p>
+<p>We initially try to use all variables to try a generalized linear model. And we’ll fail horribly when we do this. This is expected since the code won’t even run. Also GLMs can only do binary classification.</p>
 <pre class="r"><code>#df &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
 #df_test &lt;- read.csv(file=&quot;D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-testing.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
 
 #df &lt;- read.csv(file=&quot;C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;)
+df &lt;- read.csv(file=&quot;C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
+df_test &lt;- read.csv(file=&quot;C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-testing.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
 
-df &lt;- read.csv(file=&quot;D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
-df_test &lt;- read.csv(file=&quot;D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))</code></pre>
-<p>First of all, a lot of the columns have non-numerics. Secondly there are also a lot of columns that have mostly NAs. Not to mention columns that only have values every so often. These columns usually had column names with <code>avg|max|min|var|amplitude|skewness|total|std|kurtosis|</code>.</p>
-<p>I’ll look for those columns first then, subset the original <code>df</code> to <code>df1</code>. We’ll also do the same for the testing data.</p>
+#df &lt;- read.csv(file=&quot;D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))
+#df_test &lt;- read.csv(file=&quot;D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv&quot;, header=TRUE, sep=&quot;,&quot;,na.strings = c(&quot;NA&quot;,&quot;&quot;,'#DIV/0!'))</code></pre>
+<p>A lot of the columns have non-numerics. Secondly there are also a lot of columns that have mostly NAs. Not to mention columns that only have values every so often. These columns usually had column names with <code>avg|max|min|var|amplitude|skewness|total|std|kurtosis|</code>.</p>
 <pre class="r"><code>#a &lt;- grep(&quot;avg|max|min|var|amplitude|skewness|total|std|kurtosis|classe&quot;,names(df),value=TRUE)
 #a &lt;- grep(&quot;avg|max|min|var|amplitude|std|classe&quot;,names(df),value=TRUE)
 #df1 &lt;- df[a]
@@ -215,6 +153,7 @@ df1_test &lt;- df_test</code></pre>
 <h3>Clean the data</h3>
 <p>One of our motivations for subsetting data this way is to remove the NAs. So we’ll do that on our subsetted <code>df1</code> and store it in <code>df2</code>. We’ll do the same with the testing data.</p>
 <p>Columns 1 to 6 contain data that is not relevant to our analysis so we’ll go ahead and remove those too.</p>
+<p>The dataset also contains strings like <code>#DIV/0!</code> and <code>NA</code> and these were read as NAs in the <code>read.csv</code> call.</p>
 <pre class="r"><code>df1 &lt;- df1[,(colSums(is.na(df1)) == 0)]
 df1 &lt;- df1[,7:ncol(df1)]
 df2 &lt;- df1
@@ -232,7 +171,8 @@ df2_test &lt;- df1_test
 #df2[b] &lt;- data.frame(lapply(df2[b],as.numeric))
 #str(df2[b])</code></pre>
 <p>Initial runs showed problems in runtime taking up to 4 hrs in my machine. To reduce this, at least for the building of this code, a very small subset of the data was used for testing, hence on the comments a <code>p=0.1</code> can be seen. The approximate run time is 30 mins.</p>
-<pre class="r"><code>trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+<pre class="r"><code>#trainDf&lt;-createDataPartition(y=df2$classe,p=0.1,list=FALSE)
+trainDf&lt;-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
 training &lt;- df2[trainDf,]
 testing &lt;- df2[-trainDf,]
 
@@ -242,8 +182,8 @@ set.seed(21)</code></pre>
 </div>
 <div id="model-building-and-prediction" class="section level3">
 <h3>Model building and Prediction</h3>
-<p>The training data <code>df2</code> is used to create a model using random forest. We also look at our estimated out of sample error by calling the <code>modelFit</code> object. This will return a few stats about our predictor.</p>
-<p>Originally the model used to predict was random forest so we’ll start with it.</p>
+<p>Originally in the study conducted, the model used to predict was random forest so we’ll start with it. The training data <code>df2</code> is used to create the model. We also look at our estimated out of sample error by calling the <code>modelFit</code> object. This will return a few stats about our predictor.</p>
+<p>We’ll also take this time to go ahead and predict using our test data.</p>
 <pre><code>## Random Forest 
 ## 
 ## 19622 samples
@@ -282,15 +222,16 @@ modelFit_cv</code></pre>
 ## Resampling results across tuning parameters:
 ## 
 ##   cp          Accuracy   Kappa     
-##   0.03906769  0.5356750  0.40603554
-##   0.06050824  0.4314028  0.23354259
-##   0.11791512  0.3325793  0.07356566
+##   0.03702649  0.5748063  0.45883858
+##   0.04231147  0.4876533  0.32027157
+##   0.11573151  0.3314922  0.07196445
 ## 
 ## Accuracy was used to select the optimal model using the largest value.
-## The final value used for the model was cp = 0.03906769.</code></pre>
+## The final value used for the model was cp = 0.03702649.</code></pre>
 </div>
 <div id="using-bootstrapping" class="section level3">
 <h3>Using Bootstrapping</h3>
+<p>Using another forest approach <code>cforest</code> we get better results.</p>
 <pre class="r"><code>modelFit_oob &lt;- train(trainingData,trainingClass,method = 'cforest', trControl = trainControl(method = &quot;oob&quot;))
 modelFit_oob</code></pre>
 <pre><code>## Conditional Inference Random Forest 
@@ -303,14 +244,17 @@ modelFit_oob</code></pre>
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy   Kappa    
-##    2    0.9815872  0.9767033
-##   27    0.9889931  0.9860767
-##   53    0.9830819  0.9786000
+##    2    0.9816551  0.9767877
+##   27    0.9879060  0.9847000
+##   53    0.9819948  0.9772233
 ## 
 ## Accuracy was used to select the optimal model using the largest value.
 ## The final value used for the model was mtry = 27.</code></pre>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
 </div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>The method used plays a big role in the runtime. Another factor to consider is the actual algorithms behind the method. For example, knn computes distances of point in n dimensions while forest type classifiers move from one leaf to another. When we logically think about the steps needed to classify a motion, the forest classifiers would be a closer match to how we would do the act of classifying itself.</p>
 </div>
 
 
