@@ -20,13 +20,13 @@ Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz5Ycr9NiOI
 We initially try to use all variables to try a generalized linear model. And we'll fail horribly when we do this. 
 
 ```{r}
-df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
-df_test <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+#df <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+#df_test <- read.csv(file="D:/PraticalMachineLearning/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 
 #df <- read.csv(file="C:/Users/DELL/Documents/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",")
 
-#df <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
-#df_test <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+df <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-training.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
+df_test <- read.csv(file="D:/Desktop/PracticalMachineLearningRepo/trunk/pml-testing.csv", header=TRUE, sep=",",na.strings = c("NA","",'#DIV/0!'))
 ```
 First of all, a lot of the columns have non-numerics. Secondly there are also a lot of columns that have mostly NAs. Not to mention columns that only have values every so often. These columns usually had column names with `avg|max|min|var|amplitude|skewness|total|std|kurtosis|`. 
 
@@ -71,12 +71,12 @@ Initial runs showed problems in runtime taking up to 4 hrs in my machine. To red
 
 ```{r fitting}
 
-#trainDf<-createDataPartition(y=df2$classe,p=0.1,list=FALSE)
-#training <- df2[trainDf,]
-#testing <- df2[-trainDf,]
+trainDf<-createDataPartition(y=df2$classe,p=0.75,list=FALSE)
+training <- df2[trainDf,]
+testing <- df2[-trainDf,]
 
-#trainingData <- training[,1:length(names(training))-1]
-#trainingClass <- training[,length(names(training))]
+trainingData <- training[,1:length(names(training))-1]
+trainingClass <- training[,length(names(training))]
 set.seed(21)
 ```
 ### Model building and Prediction
